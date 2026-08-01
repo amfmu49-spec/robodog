@@ -83,23 +83,78 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
-.dog-container {
-    width: 100%;
-    max-width: 380px;
-    height: 380px;
+.dog-display-stage {
+    width: 320px;
+    height: 320px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-#robo-dog-svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
-    cursor: pointer;
+/* AIBO DOG BODY FROM USER ASSET SHEET */
+#aibo-body-sprite {
+    width: 240px;
+    height: 240px;
+    position: relative;
+    background-image: url('assets/aibo_sheet.png');
+    background-size: 800px 500px;
+    background-position: -20px -20px; /* Cutout Aibo Dog from sheet */
+    background-repeat: no-no-repeat;
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.4));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* LCD Screen inside Aibo Head */
+#aibo-screen-display {
+    position: absolute;
+    top: 36px;
+    left: 28px;
+    width: 110px;
+    height: 72px;
+    background: #0077ee;
+    border: 3px solid #00d9ff;
+    border-radius: 14px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 0 12px rgba(0,217,255,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* EYE & MOUTH PARTS FROM USER ASSET PARTS SHEET */
+.eye-sprite {
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    background-image: url('assets/parts_sheet.png');
+    background-size: 500px 300px;
+}
+
+#sprite-eye-left {
+    left: 18px;
+    top: 14px;
+    background-position: -30px -130px; /* HAPPY EYE LEFT */
+}
+
+#sprite-eye-right {
+    right: 18px;
+    top: 14px;
+    background-position: -80px -130px; /* HAPPY EYE RIGHT */
+}
+
+.mouth-sprite {
+    width: 44px;
+    height: 24px;
+    position: absolute;
+    bottom: 12px;
+    background-image: url('assets/parts_sheet.png');
+    background-size: 500px 300px;
+    background-position: -270px -130px; /* NEUTRAL / CLOSED MOUTH */
+    transition: background-position 0.1s ease;
 }
 
 /* Touch Overlay for Petting */
@@ -115,12 +170,12 @@ body {
 /* Speech Bubble */
 .speech-bubble-container {
     position: absolute;
-    top: 20px;
-    width: 85%;
+    top: 15px;
+    width: 88%;
     display: flex;
     justify-content: center;
     z-index: 20;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
 }
 
 .speech-bubble {
@@ -150,65 +205,34 @@ body {
     width: 0;
 }
 
-/* SVG Animations */
-.bounce-idle {
-    animation: idleBounce 3s infinite ease-in-out;
-    transform-origin: center bottom;
+/* Idle Animations */
+.aibo-idle-anim {
+    animation: aiboBounce 2.8s infinite ease-in-out;
 }
 
-@keyframes idleBounce {
+@keyframes aiboBounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
 }
 
-.wag-tail {
-    animation: tailWag 0.6s infinite alternate ease-in-out;
-    transform-origin: 360px 260px;
-}
-
-@keyframes tailWag {
-    0% { transform: rotate(-5deg); }
-    100% { transform: rotate(15deg); }
-}
-
-.flop-ear {
-    animation: earFlop 2.5s infinite alternate ease-in-out;
-    transform-origin: 120px 120px;
-}
-.flop-ear-r {
-    animation: earFlopR 2.5s infinite alternate ease-in-out;
-    transform-origin: 220px 120px;
-}
-
-@keyframes earFlop {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(-8deg); }
-}
-@keyframes earFlopR {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(8deg); }
-}
-
-/* Trigger Animations via JS */
 .anim-happy {
-    animation: dogHappy 0.5s ease-in-out 3;
+    animation: aiboHappy 0.5s ease-in-out 3;
 }
-@keyframes dogHappy {
+@keyframes aiboHappy {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-25px) rotate(4deg); }
+    50% { transform: translateY(-20px) rotate(4deg); }
 }
 
 .anim-sit {
-    transform: translateY(25px) scaleY(0.9);
-    transition: transform 0.4s ease;
+    transform: translateY(20px) scaleY(0.92);
 }
 
 .anim-dance {
-    animation: dogDance 0.4s infinite alternate ease-in-out;
+    animation: aiboDance 0.4s infinite alternate ease-in-out;
 }
-@keyframes dogDance {
-    0% { transform: translateX(-15px) rotate(-6deg); }
-    100% { transform: translateX(15px) rotate(6deg); }
+@keyframes aiboDance {
+    0% { transform: translateX(-12px) rotate(-5deg); }
+    100% { transform: translateX(12px) rotate(5deg); }
 }
 
 /* Controls Panel */

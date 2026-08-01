@@ -1,4 +1,4 @@
-// Aibo-chan Robo Dog AI Communication & Lip-Sync Script
+// Aibo-chan Robo Dog Asset Sheet Control & Lip-Sync Script
 
 // State & UI References
 let currentEmotion = 'happy';
@@ -7,18 +7,13 @@ let lipSyncTimer = null;
 let speechSynth = window.speechSynthesis;
 let openAiApiKey = localStorage.getItem('openai_api_key') || '';
 
-// DOM Elements
-const mouthPath = document.getElementById('mouth-path');
-const eyeLeftBg = document.getElementById('eye-left-bg');
-const eyeRightBg = document.getElementById('eye-right-bg');
-const eyeLeftPupil = document.getElementById('eye-left-pupil');
-const eyeRightPupil = document.getElementById('eye-right-pupil');
-const eyesHeart = document.getElementById('eyes-heart');
-const eyeLeftGroup = document.getElementById('eye-left');
-const eyeRightGroup = document.getElementById('eye-right');
+// DOM Elements for User Image Sheet Cutouts
+const eyeLeft = document.getElementById('sprite-eye-left');
+const eyeRight = document.getElementById('sprite-eye-right');
+const mouthSprite = document.getElementById('sprite-mouth');
+const aiboBody = document.getElementById('aibo-body-sprite');
 
 const dogSpeechText = document.getElementById('dog-speech-text');
-const dogBody = document.getElementById('dog-body');
 const chatInput = document.getElementById('chat-input');
 const apiKeyInput = document.getElementById('api-key-input');
 const touchOverlay = document.getElementById('touch-overlay');
@@ -40,53 +35,57 @@ function saveApiKey() {
 }
 
 // ---------------------------------------------------------
-// 1. DYNAMIC FACE & EMOTION CONTROL
+// 1. DYNAMIC FACE & EMOTION CONTROL USING USER ASSET SHEET
 // ---------------------------------------------------------
 
-// Mouth Path Shapes for Lip-Sync
-const mouthShapes = {
-    closed: "M 155 178 Q 170 184 185 178",           // 微笑み・閉じ口
-    neutral: "M 155 178 Q 170 178 185 178",          // 平らな口
-    openSmall: "M 155 175 Q 170 192 185 175",        // 小さい開き口
-    openLarge: "M 150 172 Q 170 202 190 172",        // 大きい開き口 (あ・わ)
-    openOh: "M 160 172 A 10 12 0 0 0 180 172 Z",      // 丸い口 (お)
-    sad: "M 155 185 Q 170 175 185 185",             // 悲しい口
-    cheeky: "M 155 175 Q 175 188 185 172"            // 生意気
+// Eye Cutout Positions from parts_sheet.png
+const eyePositions = {
+    happyLeft: "-30px -130px",
+    happyRight: "-80px -130px",
+    cheekyLeft: "-30px -40px",
+    cheekyRight: "-80px -40px",
+    neutralLeft: "-30px -210px",
+    neutralRight: "-80px -210px",
+    sadLeft: "-30px -290px",
+    sadRight: "-80px -290px"
+};
+
+// Mouth Cutout Positions from parts_sheet.png (for Lip Sync)
+const mouthPositions = {
+    closed: "-270px -130px",      // NEUTRAL mouth
+    openSmall: "-270px -40px",     // CHEEKY/HAPPY mouth
+    openLarge: "-270px -210px",    // SAD/OPEN mouth
+    happy: "-270px -40px"
 };
 
 function setEmotion(emotion) {
     currentEmotion = emotion;
-    eyesHeart.style.display = 'none';
-    eyeLeftGroup.style.display = 'inline';
-    eyeRightGroup.style.display = 'inline';
 
     switch (emotion) {
         case 'happy':
-            mouthPath.setAttribute('d', mouthShapes.closed);
-            eyeLeftPupil.setAttribute('cy', '148');
-            eyeRightPupil.setAttribute('cy', '148');
+            eyeLeft.style.backgroundPosition = eyePositions.happyLeft;
+            eyeRight.style.backgroundPosition = eyePositions.happyRight;
+            mouthSprite.style.backgroundPosition = mouthPositions.closed;
             break;
         case 'love':
-            eyesHeart.style.display = 'inline';
-            eyeLeftGroup.style.display = 'none';
-            eyeRightGroup.style.display = 'none';
-            mouthPath.setAttribute('d', mouthShapes.openSmall);
+            eyeLeft.style.backgroundPosition = eyePositions.happyLeft;
+            eyeRight.style.backgroundPosition = eyePositions.happyRight;
+            mouthSprite.style.backgroundPosition = mouthPositions.openSmall;
             break;
         case 'sad':
-            mouthPath.setAttribute('d', mouthShapes.sad);
-            eyeLeftPupil.setAttribute('cy', '154');
-            eyeRightPupil.setAttribute('cy', '154');
-            break;
-        case 'surprised':
-            mouthPath.setAttribute('d', mouthShapes.openOh);
-            eyeLeftPupil.setAttribute('r', '4');
-            eyeRightPupil.setAttribute('r', '4');
+            eyeLeft.style.backgroundPosition = eyePositions.sadLeft;
+            eyeRight.style.backgroundPosition = eyePositions.sadRight;
+            mouthSprite.style.backgroundPosition = mouthPositions.openLarge;
             break;
         case 'cheeky':
-            mouthPath.setAttribute('d', mouthShapes.cheeky);
+            eyeLeft.style.backgroundPosition = eyePositions.cheekyLeft;
+            eyeRight.style.backgroundPosition = eyePositions.cheekyRight;
+            mouthSprite.style.backgroundPosition = mouthPositions.happy;
             break;
         default:
-            mouthPath.setAttribute('d', mouthShapes.closed);
+            eyeLeft.style.backgroundPosition = eyePositions.neutralLeft;
+            eyeRight.style.backgroundPosition = eyePositions.neutralRight;
+            mouthSprite.style.backgroundPosition = mouthPositions.closed;
             break;
     }
 }
@@ -99,17 +98,14 @@ function startLipSync(durationSeconds = 3) {
     if (isSpeaking) clearInterval(lipSyncTimer);
     isSpeaking = true;
 
-    const shapes = [mouthShapes.openSmall, mouthShapes.openLarge, mouthShapes.openOh, mouthShapes.closed];
-    let step = 0;
+    const mouths = [mouthPositions.openSmall, mouthPositions.openLarge, mouthPositions.closed];
 
     lipSyncTimer = setInterval(() => {
         if (!isSpeaking) return;
-        const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
-        mouthPath.setAttribute('d', randomShape);
-        step++;
+        const randomMouth = mouths[Math.floor(Math.random() * mouths.length)];
+        mouthSprite.style.backgroundPosition = randomMouth;
     }, 130);
 
-    // Auto stop lip sync after duration if speech synth ends
     setTimeout(() => {
         stopLipSync();
     }, durationSeconds * 1000);
@@ -125,12 +121,11 @@ function speakText(text, emotion = 'happy') {
     showDogSpeech(text);
     setEmotion(emotion);
 
-    // Play Sound / Speech Synthesis
     if ('speechSynthesis' in window) {
-        speechSynth.cancel(); // Stop current speech
+        speechSynth.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ja-JP';
-        utterance.pitch = 1.4; // 高めの可愛らしい声
+        utterance.pitch = 1.4;
         utterance.rate = 1.1;
 
         utterance.onstart = () => {
@@ -144,7 +139,6 @@ function speakText(text, emotion = 'happy') {
 
         speechSynth.speak(utterance);
     } else {
-        // Fallback for browsers without Web Speech
         startLipSync(Math.max(2, text.length * 0.2));
     }
 }
@@ -161,26 +155,26 @@ function showDogSpeech(text) {
 // ---------------------------------------------------------
 
 function triggerAction(action) {
-    dogBody.className = ''; // Reset class
-    void dogBody.offsetWidth; // Trigger reflow
+    aiboBody.className = '';
+    void aiboBody.offsetWidth;
 
     switch (action) {
         case 'pet':
-            dogBody.classList.add('anim-happy');
+            aiboBody.classList.add('anim-happy');
             speakText('あはは！気持ちいいワン！大好き！', 'love');
             createHearts();
             break;
         case 'sit':
-            dogBody.classList.add('anim-sit');
+            aiboBody.classList.add('anim-sit');
             speakText('おすわりしたワン！えらい？', 'happy');
             break;
         case 'bark':
-            dogBody.classList.add('anim-happy');
+            aiboBody.classList.add('anim-happy');
             speakText('ワン！ワンワンッ！！', 'cheeky');
             playBeepSound();
             break;
         case 'dance':
-            dogBody.classList.add('anim-dance');
+            aiboBody.classList.add('anim-dance');
             speakText('ノリノリだワン〜♪ タノシイ！', 'love');
             break;
     }
@@ -194,7 +188,7 @@ function setupTouchEvents() {
 }
 
 function createHearts() {
-    const rect = dogBody.getBoundingClientRect();
+    const rect = aiboBody.getBoundingClientRect();
     for (let i = 0; i < 5; i++) {
         setTimeout(() => {
             const x = rect.left + Math.random() * rect.width;
@@ -220,7 +214,7 @@ function playBeepSound() {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
@@ -229,7 +223,7 @@ function playBeepSound() {
         osc.start();
         osc.stop(audioCtx.currentTime + 0.15);
     } catch (e) {
-        console.log('AudioContext not allowed without user gesture yet');
+        console.log('AudioContext not allowed without user gesture');
     }
 }
 
@@ -246,15 +240,13 @@ async function sendMessage() {
     if (!text) return;
     chatInput.value = '';
 
-    // If API Key is present, call OpenAI ChatGPT API
     if (openAiApiKey) {
         showDogSpeech('考え中だワン...');
-        setEmotion('surprised');
+        setEmotion('cheeky');
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
-                    'Content-[#Type]': 'application/json',
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${openAiApiKey}`
                 },
@@ -263,7 +255,7 @@ async function sendMessage() {
                     messages: [
                         {
                             role: 'system',
-                            content: 'あなたは愛らしくて元気な子犬ロボット「アイボちゃん」です。ユーザーと楽しくコミュニケーションしてください。文末には「ワン！」「ワン♪」などをつけ、60文字以内で可愛く簡潔に答えてください。レスポンスの最初に[happy][love][sad][surprised][cheeky]のいずれかの感情タグをつけてください。例: [happy]遊んでくれて嬉しいワン！'
+                            content: 'あなたは愛らしくて元気な子犬ロボット「アイボちゃん」です。ユーザーと楽しくコミュニケーションしてください。文末には「ワン！」「ワン♪」などをつけ、60文字以内で可愛く簡潔に答えてください。レスポンスの最初に[happy][love][sad][cheeky]のいずれかの感情タグをつけてください。例: [happy]遊んでくれて嬉しいワン！'
                         },
                         { role: 'user', content: text }
                     ],
@@ -276,15 +268,14 @@ async function sendMessage() {
                 let reply = data.choices[0].message.content;
                 let emotion = 'happy';
 
-                // Extract emotion tag if present
-                const tagMatch = reply.match(/^\[(happy|love|sad|surprised|cheeky)\]/);
+                const tagMatch = reply.match(/^\[(happy|love|sad|cheeky)\]/);
                 if (tagMatch) {
                     emotion = tagMatch[1];
                     reply = reply.replace(/^\[.*?\]/, '').trim();
                 }
 
                 speakText(reply, emotion);
-                dogBody.classList.add('anim-happy');
+                aiboBody.classList.add('anim-happy');
             } else {
                 speakText('う〜ん、うまく聞き取れなかったワン...', 'sad');
             }
@@ -293,12 +284,10 @@ async function sendMessage() {
             speakText('エラーが起きたワン。APIキーを確認してね。', 'sad');
         }
     } else {
-        // Preset Demo Responses when no API Key is set
         respondWithDemo(text);
     }
 }
 
-// Smart Preset Rules for Demo Mode
 function respondWithDemo(userText) {
     const txt = userText.toLowerCase();
     let reply = "";
@@ -314,13 +303,10 @@ function respondWithDemo(userText) {
         reply = "えへへ、ありがとうワン！ボクも大好きだワン！";
         emotion = "love";
         createHearts();
-    } else if (txt.includes('お腹') || txt.includes('ごはん') || txt.includes('エサ')) {
-        reply = "電気（充電）がお腹いっぱいのエネルギーだワン！⚡";
-        emotion = "surprised";
     } else if (txt.includes('散歩') || txt.includes('遊')) {
         reply = "お散歩行くワン！？ワクワクしちゃうワン！";
         emotion = "happy";
-        dogBody.classList.add('anim-dance');
+        aiboBody.classList.add('anim-dance');
     } else {
         const fallbacks = [
             "ワン！君とおしゃべりできてとっても嬉しいワン！",
@@ -336,7 +322,7 @@ function respondWithDemo(userText) {
 }
 
 // ---------------------------------------------------------
-// 5. VOICE INPUT (Web Speech API Recognition)
+// 5. VOICE INPUT (Web Speech API)
 // ---------------------------------------------------------
 
 let recognition = null;
@@ -364,7 +350,7 @@ function toggleVoiceInput() {
         isRecording = true;
         micBtn.classList.add('recording');
         showDogSpeech('聞いてるワン...話しかけてね！');
-        setEmotion('surprised');
+        setEmotion('cheeky');
     };
 
     recognition.onresult = (event) => {
