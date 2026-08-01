@@ -95,15 +95,15 @@ body {
     align-items: center;
 }
 
-/* AIBO DOG BODY FROM USER ASSET SHEET */
+/* AIBO DOG BODY FROM EXACT USER ASSET SHEET */
 #aibo-body-sprite {
     width: 240px;
     height: 240px;
     position: relative;
-    background-image: url('assets/aibo_sheet.png');
+    background-image: url('assets/aibo_sheet.jpg');
     background-size: 800px 500px;
-    background-position: -20px -20px; /* Cutout Aibo Dog from sheet */
-    background-repeat: no-no-repeat;
+    background-position: -20px -20px;
+    background-repeat: no-repeat;
     filter: drop-shadow(0 12px 20px rgba(0,0,0,0.4));
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -125,25 +125,25 @@ body {
     overflow: hidden;
 }
 
-/* EYE & MOUTH PARTS FROM USER ASSET PARTS SHEET */
+/* EYE & MOUTH PARTS FROM EXACT USER ASSET SHEET */
 .eye-sprite {
     width: 32px;
     height: 32px;
     position: absolute;
-    background-image: url('assets/parts_sheet.png');
+    background-image: url('assets/parts_sheet.jpg');
     background-size: 500px 300px;
 }
 
 #sprite-eye-left {
     left: 18px;
     top: 14px;
-    background-position: -30px -130px; /* HAPPY EYE LEFT */
+    background-position: -30px -130px;
 }
 
 #sprite-eye-right {
     right: 18px;
     top: 14px;
-    background-position: -80px -130px; /* HAPPY EYE RIGHT */
+    background-position: -80px -130px;
 }
 
 .mouth-sprite {
@@ -151,9 +151,9 @@ body {
     height: 24px;
     position: absolute;
     bottom: 12px;
-    background-image: url('assets/parts_sheet.png');
+    background-image: url('assets/parts_sheet.jpg');
     background-size: 500px 300px;
-    background-position: -270px -130px; /* NEUTRAL / CLOSED MOUTH */
+    background-position: -270px -130px;
     transition: background-position 0.1s ease;
 }
 
