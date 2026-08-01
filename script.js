@@ -1,24 +1,18 @@
-// Aibo-chan Robo Dog Asset Sheet Control & Lip-Sync Script
+// Aibo-chan Robo Dog Clean Asset Sheet Control & Lip-Sync Script
 
-// State & UI References
 let currentEmotion = 'happy';
 let isSpeaking = false;
 let lipSyncTimer = null;
 let speechSynth = window.speechSynthesis;
 let openAiApiKey = localStorage.getItem('openai_api_key') || '';
 
-// DOM Elements for User Image Sheet Cutouts
-const eyeLeft = document.getElementById('sprite-eye-left');
-const eyeRight = document.getElementById('sprite-eye-right');
 const mouthSprite = document.getElementById('sprite-mouth');
 const aiboBody = document.getElementById('aibo-body-sprite');
-
 const dogSpeechText = document.getElementById('dog-speech-text');
 const chatInput = document.getElementById('chat-input');
 const apiKeyInput = document.getElementById('api-key-input');
 const touchOverlay = document.getElementById('touch-overlay');
 
-// Initialize
 window.addEventListener('DOMContentLoaded', () => {
     if (openAiApiKey) {
         apiKeyInput.value = openAiApiKey;
@@ -34,77 +28,25 @@ function saveApiKey() {
     setEmotion('love');
 }
 
-// ---------------------------------------------------------
-// 1. DYNAMIC FACE & EMOTION CONTROL USING USER ASSET SHEET
-// ---------------------------------------------------------
-
-// Eye Cutout Positions from parts_sheet.png
-const eyePositions = {
-    happyLeft: "-30px -130px",
-    happyRight: "-80px -130px",
-    cheekyLeft: "-30px -40px",
-    cheekyRight: "-80px -40px",
-    neutralLeft: "-30px -210px",
-    neutralRight: "-80px -210px",
-    sadLeft: "-30px -290px",
-    sadRight: "-80px -290px"
-};
-
-// Mouth Cutout Positions from parts_sheet.png (for Lip Sync)
-const mouthPositions = {
-    closed: "-270px -130px",      // NEUTRAL mouth
-    openSmall: "-270px -40px",     // CHEEKY/HAPPY mouth
-    openLarge: "-270px -210px",    // SAD/OPEN mouth
-    happy: "-270px -40px"
-};
-
 function setEmotion(emotion) {
     currentEmotion = emotion;
-
-    switch (emotion) {
-        case 'happy':
-            eyeLeft.style.backgroundPosition = eyePositions.happyLeft;
-            eyeRight.style.backgroundPosition = eyePositions.happyRight;
-            mouthSprite.style.backgroundPosition = mouthPositions.closed;
-            break;
-        case 'love':
-            eyeLeft.style.backgroundPosition = eyePositions.happyLeft;
-            eyeRight.style.backgroundPosition = eyePositions.happyRight;
-            mouthSprite.style.backgroundPosition = mouthPositions.openSmall;
-            break;
-        case 'sad':
-            eyeLeft.style.backgroundPosition = eyePositions.sadLeft;
-            eyeRight.style.backgroundPosition = eyePositions.sadRight;
-            mouthSprite.style.backgroundPosition = mouthPositions.openLarge;
-            break;
-        case 'cheeky':
-            eyeLeft.style.backgroundPosition = eyePositions.cheekyLeft;
-            eyeRight.style.backgroundPosition = eyePositions.cheekyRight;
-            mouthSprite.style.backgroundPosition = mouthPositions.happy;
-            break;
-        default:
-            eyeLeft.style.backgroundPosition = eyePositions.neutralLeft;
-            eyeRight.style.backgroundPosition = eyePositions.neutralRight;
-            mouthSprite.style.backgroundPosition = mouthPositions.closed;
-            break;
+    if (mouthSprite) {
+        mouthSprite.style.backgroundImage = "url('assets/mouth_closed.png')";
     }
 }
-
-// ---------------------------------------------------------
-// 2. LIP-SYNC & SPEECH SYNTHESIS
-// ---------------------------------------------------------
 
 function startLipSync(durationSeconds = 3) {
     if (isSpeaking) clearInterval(lipSyncTimer);
     isSpeaking = true;
 
-    const mouths = [mouthPositions.openSmall, mouthPositions.openLarge, mouthPositions.closed];
-
+    let isOpen = false;
     lipSyncTimer = setInterval(() => {
         if (!isSpeaking) return;
-        const randomMouth = mouths[Math.floor(Math.random() * mouths.length)];
-        mouthSprite.style.backgroundPosition = randomMouth;
-    }, 130);
+        isOpen = !isOpen;
+        if (mouthSprite) {
+            mouthSprite.style.backgroundImage = isOpen ? "url('assets/mouth_open.png')" : "url('assets/mouth_closed.png')";
+        }
+    }, 140);
 
     setTimeout(() => {
         stopLipSync();
@@ -114,7 +56,9 @@ function startLipSync(durationSeconds = 3) {
 function stopLipSync() {
     isSpeaking = false;
     clearInterval(lipSyncTimer);
-    setEmotion(currentEmotion);
+    if (mouthSprite) {
+        mouthSprite.style.backgroundImage = "url('assets/mouth_closed.png')";
+    }
 }
 
 function speakText(text, emotion = 'happy') {
@@ -149,10 +93,6 @@ function showDogSpeech(text) {
     container.style.transform = 'scale(1.08)';
     setTimeout(() => container.style.transform = 'scale(1)', 200);
 }
-
-// ---------------------------------------------------------
-// 3. ACTION BUTTONS & PETTING INTERACTION
-// ---------------------------------------------------------
 
 function triggerAction(action) {
     aiboBody.className = '';
@@ -227,10 +167,6 @@ function playBeepSound() {
     }
 }
 
-// ---------------------------------------------------------
-// 4. CHATGPT API & DEMO RESPONSE SYSTEM
-// ---------------------------------------------------------
-
 function handleKeyPress(e) {
     if (e.key === 'Enter') sendMessage();
 }
@@ -255,7 +191,7 @@ async function sendMessage() {
                     messages: [
                         {
                             role: 'system',
-                            content: 'あなたは愛らしくて元気な子犬ロボット「アイボちゃん」です。ユーザーと楽しくコミュニケーションしてください。文末には「ワン！」「ワン♪」などをつけ、60文字以内で可愛く簡潔に答えてください。レスポンスの最初に[happy][love][sad][cheeky]のいずれかの感情タグをつけてください。例: [happy]遊んでくれて嬉しいワン！'
+                            content: 'あなたは愛らしくて元気な子犬ロボット「アイボちゃん」です。ユーザーと楽しくコミュニケーションしてください。文末には「ワン！」「ワン♪」などをつけ、60文字以内で可愛く簡潔に答えてください。[happy][love][sad][cheeky]のいずれかの感情タグを冒頭につけてください。'
                         },
                         { role: 'user', content: text }
                     ],
@@ -320,10 +256,6 @@ function respondWithDemo(userText) {
 
     speakText(reply, emotion);
 }
-
-// ---------------------------------------------------------
-// 5. VOICE INPUT (Web Speech API)
-// ---------------------------------------------------------
 
 let recognition = null;
 let isRecording = false;
